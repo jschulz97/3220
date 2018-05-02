@@ -9,6 +9,10 @@
 #include<fstream>
 #include<cctype>
 #include<iomanip>
+
+#include<Accounts.h>
+#include<Users.h>
+#include<Encrypt.h>
 using namespace std;
 
 /**************************************************************************************************/
@@ -88,6 +92,24 @@ int main()
 	return 0;
 }
 
+
+/**
+ * 
+ */
+void Savings::create_account()
+{
+	cout << endl << "Enter Account Number: ";
+	cin >> act_num;
+	cout << endl << endl << "Enter Name: ";
+	cin.ignore();
+	cin.getline(act_name,50);
+	cout << endl << "What Type of Account do you want to open? (C for Checkings, S for Savings): ";
+	cin >> act_type;
+	act_type=toupper(act_type);
+	cout << endl << "Enter Initial Amount: ";
+	cin >> dep;
+	cout << endl << "Account Created";
+}
 
 /**
  * 
