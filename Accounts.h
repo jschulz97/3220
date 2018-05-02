@@ -16,11 +16,13 @@ public:
  *
  */
 class BaseAccount {
-private:
+protected:
 	int act_num;
 	double balance;
 	string type;
 	bool approved;
+	time_t theTime;
+	struct tm *startTime;
 public:
 	virtual BaseAccount() = 0;
 	virtual void display_details() const;
@@ -30,6 +32,7 @@ public:
 	string get_type() const {return type;};
 	int get_act_num() const {return act_num;};
 	double get_balance() const {return balance;};
+	void approve(BaseUser*);
 };
 
 
@@ -38,6 +41,13 @@ public:
  */
 void BaseAccount::display_details() const
 {
+	try {
+		if(!approved)
+			throw error("Account is not yet approved");
+	} catch(error e) {
+		e.display();
+	}
+
 	cout << endl << "Account Number: " << act_num;
 	cout << endl << "Type of Account: " << act_type;
 	cout << endl << "Balance: " << balance;
@@ -49,6 +59,8 @@ void BaseAccount::display_details() const
  */
 void BaseAccount::withdraw(double x) {
 	try {
+		if(!approved)
+			throw error("Account is not yet approved");
 		if(x > balance)
 			throw error("Attempt to overdraw");
 		if(x <= 0) 
@@ -66,6 +78,8 @@ void BaseAccount::withdraw(double x) {
  */
 void BaseAccount::deposit(double x) {
 	try {
+		if(!approved)
+			throw error("Account is not yet approved");
 		if(x <= 0) 
 			throw error("Not a valid amount to deposit");
 	} catch(error e){
@@ -73,6 +87,32 @@ void BaseAccount::deposit(double x) {
 		throw;
 	}
 	balance += x;
+}
+
+
+/**
+ * 
+ */
+void BaseAccount::approve(BaseUser* usr) {
+	try {
+		if(usr.get_permissions() < 2)
+			throw error("You do not have permission to complete this task");
+		approved = true;
+	} catch(error e) {
+		e.display();
+		throw;
+	}
+}
+
+
+/**
+ * 
+ */
+void BaseAccount::edit()
+{
+	cout << endl << "Account Number: " << act_num;
+	cout << endl << "Edit Balance amount : ";
+	cin >> balance;
 }
 
 
@@ -85,41 +125,39 @@ class Savings : public BaseAccount {
 private:
 	double interest_rate;
 	int transaction_limit = 5;
-	time_t theTime;
-	struct tm *aTime;
+	void calc_limit();
 public:
 	Savings();
-	Savings(double balance);
+	Savings(double);
 	void withdraw(double);
 	void desposit(double);
 	void display_details() const;
-	void calc_limit();
 };
 
 
 /**
  * 
  */
-Savings::Savings() {
+Savings::Savings() : BaseAccount() {
 	balance = 0.0;
 	type = "Savings";
 	approved = false;
 	
 	theTime = time(NULL);
-	aTime = localtime(&theTime);
+	startTime = localtime(&theTime);
 }
 
 
 /**
  * 
  */
-Savings::Savings(double x) {
+Savings::Savings(double x) : BaseAccount() {
 	balance = x;
 	type = "Savings";
 	approved = false;
 
 	theTime = time(NULL);
-	aTime = localtime(&theTime);
+	startTime = localtime(&theTime);
 }
 
 
@@ -167,8 +205,8 @@ void Savings::display_details() const : BaseAccount::display_details() {
 void Savings::calc_limit() {
 	//Save previously fetched month, get current time
 	int month = aTime->tm_mon;
-	theTime = time(NULL);
-	aTime = localtime(&theTime);
+	//theTime = time(NULL);
+	struct tm *aTime = localtime(&theTime);
 
 	//If it's a different month, reset the count
 	if(month != aTime->tm_mon)
@@ -178,6 +216,7 @@ void Savings::calc_limit() {
 	cout << endl << "You have " << transaction_limit << " transactions left this month." << endl;
 }
 
+
 /****************************************************************************************************/
 
 /**
@@ -185,69 +224,70 @@ void Savings::calc_limit() {
  */
 class Checkings : public BaseAccount {
 private:
-	double interest_rate;
+	int card_status = 0;
 public:
-	Savings();
-	Savings(double balance);
-	void display_details() const;
+	Checkings();
+	Checkings(double);
+	void request_debit_card();
 };
 
 
-
-
 /**
  * 
  */
-void account::edit()
-{
-	cout << endl << "Account Number: " << act_num;
-	cout << endl << "Edit Account Username: ";
-	cin.ignore();
-	cin.getline(act_name,50);
-	cout << endl << "Edit Type of Account: ";
-	cin >> act_type;
-	act_type = toupper(act_type);
-	cout << endl << "Edit Balance amount : ";
-	cin >> dep;
+Checkings::Checkings() : BaseAccount() {
+	balance = 0;
+	type = "Checkings";
+	approved = false;
+
+	theTime = time(NULL);
+	startTime = localtime(&theTime);
 }
 
 
 /**
  * 
  */
-void account::report() const
-{
-	cout << act_num << setw(10) << " " << act_name << setw(10) << " " << act_type << setw(6) << dep << endl;
+Checkings::Checkings(double x) : BaseAccount() {
+	balance = x;
+	type = "Checkings";
+	approved = false;
+
+	theTime = time(NULL);
+	startTime = localtime(&theTime);
 }
 
+
+/**
+ * 
+ */
+void Checkings::request_debit_card() {
+	try {
+		if(!approved)
+			throw error("Account is not yet approved");
+		card_status = -1; //Card status -1 means card is waiting on approval
+	} catch(error e) {
+		e.display();
+	}
+}
+
+
+/**
+ * 
+ */
+void Checkings::approve_debit_card(BaseUser* usr) {
+	try {
+		if(usr.getPermission() < 2)
+			throw error("You do not have permission to complete this task");
+		card_status = 1;
+	} catch(error e) {
+		e.display();
+		throw;
+	}
+
+
+}
 
 
 
 /****************************************************************************************************/
-
-
-/**
- * 
- */
-char account::rettype() const
-{
-	return act_type;
-}
-
-
-/**
- * 
- */
-int account::retact_num() const
-{
-	return act_num;
-}
-
-
-/**
- * 
- */
-int account::retdeposit() const
-{
-	return dep;
-}
