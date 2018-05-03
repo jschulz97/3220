@@ -20,7 +20,7 @@ protected:
 	int act_num;
 	double balance;
 	string type;
-	bool approved;
+	bool approved = false;
 	time_t theTime;
 	struct tm *startTime;
 public:

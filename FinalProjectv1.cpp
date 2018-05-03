@@ -13,6 +13,7 @@
 #include<Accounts.h>
 #include<Users.h>
 #include<Encrypt.h>
+#include<Loan.h>
 using namespace std;
 
 /**************************************************************************************************/
@@ -29,68 +30,113 @@ void write_account();
 
 int main()
 {
-	char choice;
-	int num;
-	do
-	{
-		system("cls");
-		cout << endl << "\t!!!Welcome to S&K Bank!!!";
-		cout << endl << endl << "1) New Account";
-		cout << endl << endl << "2) Deposit";
-		cout << endl << endl << "3) Withdraw";
-		cout << endl << endl << "4) Balance";
-		cout << endl << endl << "5) Display All Accounts";
-		cout << endl << endl << "6) Close an Account";
-		cout << endl << endl << "7) Edit the Details of an Account";
-		cout << endl << endl << "8) Exit";
-		cout << endl << endl << "Make Your Choice (1-8) and don't be a smartass and pick something besides these";
-		cin >> choice;
-		system("cls");
-		switch(choice)
-		{
-		case '1':
-			write_account();
-			break;
-		case '2':
-			cout << endl << endl << "Enter Account Number: ";
-			cin >> num;
-			deposit_withdraw(num, 1);
-			break;
-		case '3':
-			cout << endl << endl << "Enter Account Number: ";
-			cin >> num;
-			deposit_withdraw(num, 2);
-			break;
-		case '4':
-			cout << endl << endl << "Enter Account Number: ";
-			cin>>num;
-			display_account(num);
-			break;
-		case '5':
-			display_all();
-			break;
-		case '6':
-			cout << endl << endl << "Enter Account Number: ";
-			cin>>num;
-			delete_account(num);
-			break;
-		 case '7':
-			cout << endl << endl << "Enter Account Number: ";
-			cin>>num;
-			edit_account(num);
-			break;
-		 case '8':
-			cout << endl << endl << "Thanks Homie";
-			break;
-		 default:
-			 cout << "\a";
+	cout << endl << "\t!!!Welcome to S&K Bank!!!";
+	BaseAccount User*;
+
+	//Log in loop
+	do {
+		try {
+			cout << endl << "Enter your user ID or 'N' to create a new account: ";
+			string id;
+			cin >> id;
+			if(id == "N") {
+				create_account();
+			}
+
+			//Check if id is a number
+			//int pow = 0;
+			int idnum;
+			for(auto i : id) {
+				if(!isdigit(i)) 
+					throw error("Invalid user ID");
+			}
+
+			//Convert id string to int
+			idnum = atoi(id);
+
+			User = sign_in(idnum,pass);
+		} catch(error e) {
+
 		}
-		cin.ignore();
-		cin.get();
+
+	} while(User->getID() == 1);
+
+
+	{
+		char choice;
+		int num;
+		do
+		{
+			system("cls");
+			cout << endl << "\t!!!Welcome ";
+			cout << endl << endl << "1) New Account";
+			cout << endl << endl << "2) Deposit";
+			cout << endl << endl << "3) Withdraw";
+			cout << endl << endl << "4) Balance";
+			cout << endl << endl << "5) Display All Accounts";
+			cout << endl << endl << "6) Close an Account";
+			cout << endl << endl << "7) Edit the Details of an Account";
+			cout << endl << endl << "8) Exit";
+			cout << endl << endl << "Make Your Choice (1-8) and don't be a smartass and pick something besides these";
+			cin >> choice;
+			system("cls");
+			switch(choice)
+			{
+			case '1':
+				write_account();
+				break;
+			case '2':
+				cout << endl << endl << "Enter Account Number: ";
+				cin >> num;
+				deposit_withdraw(num, 1);
+				break;
+			case '3':
+				cout << endl << endl << "Enter Account Number: ";
+				cin >> num;
+				deposit_withdraw(num, 2);
+				break;
+			case '4':
+				cout << endl << endl << "Enter Account Number: ";
+				cin>>num;
+				display_account(num);
+				break;
+			case '5':
+				display_all();
+				break;
+			case '6':
+				cout << endl << endl << "Enter Account Number: ";
+				cin>>num;
+				delete_account(num);
+				break;
+			 case '7':
+				cout << endl << endl << "Enter Account Number: ";
+				cin>>num;
+				edit_account(num);
+				break;
+			 case '8':
+				cout << endl << endl << "Thanks Homie";
+				break;
+			 default:
+				 cout << "\a";
+			}
+			cin.ignore();
+			cin.get();
+		}
+		while(choice != '8');
 	}
-	while(choice != '8');
 	return 0;
 }
+
+
+
+/**
+ * 
+ */
+BaseAccount* sign_in(string usr, string encrypted_pass) {
+
+}
+
+
 
 
 /**
@@ -98,6 +144,7 @@ int main()
  */
 void Savings::create_account()
 {
+	cout << endl << "**Create a new account**";
 	cout << endl << "Enter Account Number: ";
 	cin >> act_num;
 	cout << endl << endl << "Enter Name: ";
