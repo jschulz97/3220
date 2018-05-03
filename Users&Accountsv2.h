@@ -16,21 +16,7 @@ public:
 /****************************************************************************************************/
 
 
-/**
- *
- */
-class BaseUser {
-protected:
-	int ID = 1;
-	std::string fname;
-	std::string lname;
-public:
-	BaseUser() {};
-	BaseUser(std::string fn, std::string ln, int i) {fname = fn; lname = ln; ID = i;};
-	virtual int get_permissions() = 0;
-	int getID() {return ID;};
-	std::string getFName() {return fname;};
-};
+
 
 
 /****************************************************************************************************/
@@ -63,7 +49,7 @@ protected:
 	int act_num;
 	double balance;
 	std::string type;
-	bool approved = false;
+	bool approved = true;
 	time_t theTime;
 	struct tm *startTime;
 public:
@@ -76,7 +62,7 @@ public:
 	std::string get_type() const {return type;};
 	int get_act_num() const {return act_num;};
 	double get_balance() const {return balance;};
-	void approve(BaseUser *usr);
+	//void approve(BaseUser *usr);
 };
 
 
@@ -119,7 +105,7 @@ void BaseAccount::deposit(double x) {
 /**
  * 
  */
-void BaseAccount::approve(BaseUser *usr) {
+/*void BaseAccount::approve(BaseUser *usr) {
 	try {
 		if(usr->get_permissions() < 2)
 			throw error("You do not have permission to complete this task");
@@ -129,7 +115,7 @@ void BaseAccount::approve(BaseUser *usr) {
 		throw;
 	}
 }
-
+*/
 
 /**
  * 
@@ -266,7 +252,7 @@ public:
 	Checkings(double);
 	void request_debit_card();
 	void display_details() const;
-	void approve_debit_card(BaseUser*);
+	//void approve_debit_card(BaseUser*);
 };
 
 
@@ -313,7 +299,7 @@ void Checkings::request_debit_card() {
 /**
  * 
  */
-void Checkings::approve_debit_card(BaseUser *usr) {
+/*void Checkings::approve_debit_card(BaseUser *usr) {
 	try {
 		if(usr->get_permissions() < 2)
 			throw error("You do not have permission to complete this task");
@@ -322,7 +308,7 @@ void Checkings::approve_debit_card(BaseUser *usr) {
 		e.display();
 		throw;
 	}
-}
+}*/
 
 
 /**
@@ -349,25 +335,37 @@ void Checkings::display_details() const {
 /**
  *
  */
-class Customer : public BaseUser {
+class Customer {
+private:
+	int ID = 1;
+	std::string fname;
+	std::string lname;
 public:
 	Checkings* myCheckings;
 	Savings* mySavings;
 	//std::vector<BaseLoan*> loanVector;
 
 	Customer() {};
-	Customer(std::string fn, std::string ln, int i) : BaseUser(fn,ln,i) {};
+	Customer(std::string fn, std::string ln, int i) {fname = fn; lname = ln; ID = i;};
 	int get_permissions() {return 1;};
+	int getID() {return ID;};
+	std::string getFName() {return fname;};
 };
 
 
 /**
  *
  */
-class Manager : public BaseUser {
+class Manager {
+private:
+	int ID = 1;
+	std::string fname;
+	std::string lname;
 public:
 	Manager() {};
-	Manager(std::string fn, std::string ln) : BaseUser(fn,ln,0) {ID = 100000;};
+	Manager(std::string fn, std::string ln) {ID = 100000;};
 	int get_permissions() {return 2;};
+	int getID() {return ID;};
+	std::string getFName() {return fname;};
 };
 
