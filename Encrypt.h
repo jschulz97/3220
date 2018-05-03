@@ -2,7 +2,7 @@
  *
  */
 std::string encrypt(std::string m) {
-	int count,keycount = 0;
+	int count = 0, keycount = 0;
 	std::string key = "banking";
 	for(auto i : m) {
 		if(keycount == 7)
@@ -15,5 +15,7 @@ std::string encrypt(std::string m) {
 			m[count]-=93;
 		}
 		count++;
+		keycount++;
 	}
+	return m;
 }

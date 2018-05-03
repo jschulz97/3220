@@ -10,6 +10,7 @@
 #include<cctype>
 #include<iomanip>
 #include<string>
+#include<conio.h> //For hiding password with getch()
 
 #include "Users&Accounts.h"
 #include "Encrypt.h"
@@ -21,6 +22,8 @@ using namespace std;
 
 /****************************************************************************************************/
 
+string enter_password();
+void create_user_account();
 void delete_account(int);
 void deposit_withdraw(int, int);
 void display_account(int);
@@ -31,20 +34,19 @@ void write_account();
 int main()
 {
 	cout << endl << "\t!!!Welcome to S&K Bank!!!";
-	BaseAccount User*;
+	BaseUser* User = new Customer();
 
 	//Log in loop
 	do {
 		try {
 			cout << endl << "Enter your user ID or 'N' to create a new account: ";
-			int id;
+			string id;
 			cin >> id;
-			if(toupper(id) == "N") {
-				create_account();
+			if(id == "N" || id == "n") {
+				create_user_account();
 			}
 
-			//Check if id is a number
-			//int pow = 0;
+			//Check if id is fully a number
 			int idnum;
 			for(auto i : id) {
 				if(!isdigit(i)) 
@@ -52,77 +54,150 @@ int main()
 			}
 
 			//Convert id string to int
-			//idnum = atoi(id);
+			idnum = atoi(id);
 
-			User = sign_in(idnum,pass);
+			string password = enter_password();
+
+			User = sign_in(idnum,password);
 		} catch(error e) {
 			e.display();
 		}
 
-	} while(User->getID() == 1);
+	} while(User->getID() == 1); //default value for new BaseUser
 
 
-	{
+	if(User->getID() != 1) {
 		char choice;
 		int num;
-		do
-		{
-			system("cls");
-			cout << endl << "\t!!!Welcome ";
-			cout << endl << endl << "1) New Account";
-			cout << endl << endl << "2) Deposit";
-			cout << endl << endl << "3) Withdraw";
-			cout << endl << endl << "4) Balance";
-			cout << endl << endl << "5) Display All Accounts";
-			cout << endl << endl << "6) Close an Account";
-			cout << endl << endl << "7) Edit the Details of an Account";
-			cout << endl << endl << "8) Exit";
-			cout << endl << endl << "Make Your Choice (1-8) and don't be a smartass and pick something besides these";
-			cin >> choice;
-			system("cls");
-			switch(choice)
-			{
-			case '1':
-				write_account();
-				break;
-			case '2':
-				cout << endl << endl << "Enter Account Number: ";
-				cin >> num;
-				deposit_withdraw(num, 1);
-				break;
-			case '3':
-				cout << endl << endl << "Enter Account Number: ";
-				cin >> num;
-				deposit_withdraw(num, 2);
-				break;
-			case '4':
-				cout << endl << endl << "Enter Account Number: ";
-				cin>>num;
-				display_account(num);
-				break;
-			case '5':
-				display_all();
-				break;
-			case '6':
-				cout << endl << endl << "Enter Account Number: ";
-				cin>>num;
-				delete_account(num);
-				break;
-			 case '7':
-				cout << endl << endl << "Enter Account Number: ";
-				cin>>num;
-				edit_account(num);
-				break;
-			 case '8':
-				cout << endl << endl << "Thanks Homie";
-				break;
-			 default:
-				 cout << "\a";
+		do {
+			if(User->get_permissions() == 2) { //Menu for Bank Manager
+				system("cls");
+				cout << endl << "\tWelcome back " << User->getFName();
+				cout << endl << endl << "0) Exit";
+				cout << endl << endl << "1) New Account";
+
+
+
+
+				cout << endl << endl << "1) New Account";
+				cout << endl << endl << "2) Deposit";
+				cout << endl << endl << "3) Withdraw";
+				cout << endl << endl << "4) Balance";
+				cout << endl << endl << "5) Display All Accounts";
+				cout << endl << endl << "6) Close an Account";
+				cout << endl << endl << "7) Edit the Details of an Account";
+				cout << endl << endl << "8) Exit";
+				cout << endl << endl << "Make Your Choice (1-8) and don't be a smartass and pick something besides these";
+				cin >> choice;
+				system("cls");
+				switch(choice)
+				{
+				case '1':
+					write_account();
+					break;
+				case '2':
+					cout << endl << endl << "Enter Account Number: ";
+					cin >> num;
+					deposit_withdraw(num, 1);
+					break;
+				case '3':
+					cout << endl << endl << "Enter Account Number: ";
+					cin >> num;
+					deposit_withdraw(num, 2);
+					break;
+				case '4':
+					cout << endl << endl << "Enter Account Number: ";
+					cin>>num;
+					display_account(num);
+					break;
+				case '5':
+					display_all();
+					break;
+				case '6':
+					cout << endl << endl << "Enter Account Number: ";
+					cin>>num;
+					delete_account(num);
+					break;
+				 case '7':
+					cout << endl << endl << "Enter Account Number: ";
+					cin>>num;
+					edit_account(num);
+					break;
+				 case '8':
+					cout << endl << endl << "Thanks Homie";
+					break;
+				 default:
+					 cout << "\a";
+				}
+				cin.ignore();
+				cin.get();
+
+			} else { //Menu for regular customers
+
+				system("cls");
+				cout << endl << "\t!!!Welcome " << User->getFName();
+				cout << endl << endl << "0) Exit";
+				cout << endl << endl << "1) New Account";
+
+
+
+
+				cout << endl << endl << "1) New Account";
+				cout << endl << endl << "2) Deposit";
+				cout << endl << endl << "3) Withdraw";
+				cout << endl << endl << "4) Balance";
+				cout << endl << endl << "5) Display All Accounts";
+				cout << endl << endl << "6) Close an Account";
+				cout << endl << endl << "7) Edit the Details of an Account";
+				cout << endl << endl << "8) Exit";
+				cout << endl << endl << "Make Your Choice (1-8) and don't be a smartass and pick something besides these";
+				cin >> choice;
+				system("cls");
+				switch(choice)
+				{
+				case '1':
+					write_account();
+					break;
+				case '2':
+					cout << endl << endl << "Enter Account Number: ";
+					cin >> num;
+					deposit_withdraw(num, 1);
+					break;
+				case '3':
+					cout << endl << endl << "Enter Account Number: ";
+					cin >> num;
+					deposit_withdraw(num, 2);
+					break;
+				case '4':
+					cout << endl << endl << "Enter Account Number: ";
+					cin>>num;
+					display_account(num);
+					break;
+				case '5':
+					display_all();
+					break;
+				case '6':
+					cout << endl << endl << "Enter Account Number: ";
+					cin>>num;
+					delete_account(num);
+					break;
+				 case '7':
+					cout << endl << endl << "Enter Account Number: ";
+					cin>>num;
+					edit_account(num);
+					break;
+				 case '8':
+					cout << endl << endl << "Thanks Homie";
+					break;
+				 default:
+					 cout << "\a";
+				}
+				cin.ignore();
+				cin.get();
 			}
-			cin.ignore();
-			cin.get();
+
 		}
-		while(choice != '8');
+		while(choice != '0');
 	}
 	return 0;
 }
@@ -132,18 +207,94 @@ int main()
 /**
  * 
  */
-BaseAccount* sign_in(string usr, string encrypted_pass) {
+BaseUser* sign_in(int usrID, string encrypted_pass) {
+	instream userFile;
+	instream loginFile;
+	userFile.open("users.dat",ios::binary);
+	loginFile.open("logins.dat",ios::binary);
+	if(!loginFile)
+	{
+		cout << "Something went wrong, logins.dat couldn't be opened. Press any key to continue.";
+		return new Customer();
+	}
+	if(!userFile)
+	{
+		cout << "Something went wrong, users.dat couldn't be opened. Press any key to continue.";
+		return new Customer();
+	}
 
+	Login log;
+	bool found = false;
+	while(loginFile.read(reinterpret_cast<char *> (&log), sizeof(Login))) {
+		if(log.getID() == usrID) {
+			found = true;
+			if(encrypted_pass != log.getPass()) {
+				cerr << "\nPassword is incorrect\n";
+				return new Customer();
+			}
+		}
+	}
+
+	if(!found) {
+		cout << "\nUser does not exist. Press any key to continue.";
+		return new Customer();
+	}
+
+	BaseUser* bu = new Customer(); //Must allocate or bu is empty
+	while(userFile.read(reinterpret_cast<char *> (bu), sizeof(BaseUser))) {
+		if(bu->getID() == usrID) 
+			return bu;
+	}
 }
 
 
 
+/**
+ * Gets next available ID for users
+ */
+int getNextID() {
+	instream inFile;
+	inFile.open("logins.dat",ios::binary);
+	if(!inFile)
+	{
+		cout << "Something went wrong, logins.dat couldn't be opened. Press any key to continue.";
+		return 0;
+	}
+	Login log;
+
+	//Lowest ID is 900000
+	int nextID = 900000;
+
+	//Find next ID by taking highest + 1
+	while(inFile.read(reinterpret_cast<char *> (&log), sizeof(Login))) {
+		if(log.getID() > nextID) 
+			nextID = log.getID() + 1;
+	}
+	inFile.close();
+	return nextID;
+}
+
 
 /**
- * 
+ * Allows the user to enter password without it appearing in the terminal
  */
-void Savings::create_account()
-{
+string enter_password() {
+	cout << "\nEnter a password and press enter: ";
+	char c;
+	string pass = "";
+	while((c = getch()) != '\r') {
+		pass += c;
+	}
+	pass = encrypt(pass);
+	return pass;
+}
+
+
+
+/**
+ * Creates user account
+ */
+void create_user_account() {
 	cout << endl << "\t**Create a new user account**";
 	cout << endl << "Enter First Name: ";
 	string fname;
@@ -153,25 +304,50 @@ void Savings::create_account()
 	string lname;
 	cin >> lname;
 
-	BaseAccount* newUser = new Customer(fname,lname);
-
-	inFile.open("account.dat",ios::binary);
-	if(!inFile)
-	{
-		cout << "Something went wrong, the File couldn't be opened. Press any key to continue";
+	//Use helper function to figure out next available ID
+	int id;
+	if(!(id = getNextID())) {
+		cout << "\nUser creation failed. Press any key to continue.\n";
 		return;
 	}
-	while(inFile.read(reinterpret_cast<char *> (&acc), sizeof(account)))
+
+	//Add user to user list
+	BaseUser* newUser = new Customer(fname,lname,id);
+
+	ofstream outFile;
+	outFile.open("users.dat",ios::app|ios::binary);
+	if(!outFile)
 	{
-		if(acc.retact_num() != n)
-		{
-			outFile.write(reinterpret_cast<char *> (&acc), sizeof(account));
-		}
+		cout << "Something went wrong, users.dat couldn't be opened. Press any key to continue.";
+		return;
 	}
-	inFile.close();
+
+	//Find end of file
+	outFile.seekp(0,ios::end);
+	outFile.write(reinterpret_cast<char *> (newUser), sizeof(BaseUser));
+	outFile.close();
+
+	//Create and save password
+	string pass = enter_password();
+
+	//Create new login object to save to file
+	Login log(id,pass);
+
+	//Save login object to file
+	ofstream outFile;
+	outFile.open("logins.dat",ios::app|ios::binary);
+	if(!outFile)
+	{
+		cout << "Something went wrong, logins.dat couldn't be opened. Press any key to continue.";
+		return;
+	}
+	outFile.seekp(0,ios::end);
+	outFile.write(reinterpret_cast<char *> (&log), sizeof(Login));
+	outFile.close();
 
 	cout << endl << "\tAccount Created";
 }
+
 
 /**
  * 

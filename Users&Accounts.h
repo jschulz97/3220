@@ -25,13 +25,33 @@ protected:
 	std::string fname;
 	std::string lname;
 public:
-	BaseUser(std::string fn, std::string ln) {fname = fn; lname = ln;};
+	BaseUser() {};
+	BaseUser(std::string fn, std::string ln, int i) {fname = fn; lname = ln; ID = i;};
 	virtual int get_permissions() = 0;
 	int getID() {return ID;};
+	std::string getFName() {return fname;};
 };
 
 
 /****************************************************************************************************/
+
+
+/**
+ *
+ */
+class Login {
+private:
+	int ID;
+	std::string enc_pass;
+public:
+	Login(int i,std::string p) {ID = i; enc_pass = p;};
+	int getID() {return ID;};
+	std::string getPass() {return enc_pass;};
+};
+
+
+/****************************************************************************************************/
+
 
 
 /**
@@ -352,7 +372,8 @@ public:
 	Savings mySavings;
 	//std::vector<BaseLoan*> loanVector;
 
-	Customer(std::string fn, std::string ln) : BaseUser(fn,ln) {};
+	Customer() {};
+	Customer(std::string fn, std::string ln, int i) : BaseUser(fn,ln,i) {};
 	int get_permissions() {return 1;};
 };
 
@@ -362,7 +383,8 @@ public:
  */
 class Manager : public BaseUser {
 public:
-	Manager(std::string fn, std::string ln) : BaseUser(fn,ln) {ID = 100000;};
+	Manager() {};
+	Manager(std::string fn, std::string ln) : BaseUser(fn,ln,0) {ID = 100000;};
 	int get_permissions() {return 2;};
 };
 
