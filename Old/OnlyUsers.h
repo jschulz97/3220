@@ -4,13 +4,13 @@
 class BaseUser {
 protected:
 	int ID = 1;
-	string fname;
-	string lname;
+	std::string fname;
+	std::string lname;
 public:
-	virtual BaseUser(string fn, string ln) {fname = fn; lname = ln;};
+	BaseUser(std::string fn, std::string ln) {fname = fn; lname = ln;};
 	virtual int get_permissions() = 0;
 	int getID() {return ID;};
-}
+};
 
 
 
@@ -24,11 +24,11 @@ class Customer : public BaseUser {
 public:
 	Checkings myCheckings;
 	Savings mySavings;
-	vector<BaseLoan*> loanVector;
+	std::vector<BaseLoan*> loanVector;
 
-	Customer(string fn, string ln) : BaseUser(fn,ln) {myCheckings = NULL; mySavings = NULL;};
+	Customer(std::string fn, std::string ln) : BaseUser(fn,ln) {myCheckings = NULL; mySavings = NULL;};
 	int get_permissions() {return 1;};
-}
+};
 
 
 
@@ -40,6 +40,6 @@ public:
  */
 class Manager : public BaseUser {
 public:
-	Manager(string fn, string ln) : BaseUser(fn,ln) {ID = 000000;};
+	Manager(std::string fn, std::string ln) : BaseUser(fn,ln) {ID = 000000;};
 	int get_permissions() {return 2;};
-}
+};

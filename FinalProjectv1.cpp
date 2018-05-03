@@ -9,11 +9,11 @@
 #include<fstream>
 #include<cctype>
 #include<iomanip>
+#include<string>
 
-#include<Accounts.h>
-#include<Users.h>
-#include<Encrypt.h>
-#include<Loan.h>
+#include "Users&Accounts.h"
+#include "Encrypt.h"
+//#include "Loan.h"
 using namespace std;
 
 /**************************************************************************************************/
@@ -37,9 +37,9 @@ int main()
 	do {
 		try {
 			cout << endl << "Enter your user ID or 'N' to create a new account: ";
-			string id;
+			int id;
 			cin >> id;
-			if(id == "N") {
+			if(toupper(id) == "N") {
 				create_account();
 			}
 
@@ -52,11 +52,11 @@ int main()
 			}
 
 			//Convert id string to int
-			idnum = atoi(id);
+			//idnum = atoi(id);
 
 			User = sign_in(idnum,pass);
 		} catch(error e) {
-
+			e.display();
 		}
 
 	} while(User->getID() == 1);
@@ -144,18 +144,33 @@ BaseAccount* sign_in(string usr, string encrypted_pass) {
  */
 void Savings::create_account()
 {
-	cout << endl << "**Create a new account**";
-	cout << endl << "Enter Account Number: ";
-	cin >> act_num;
-	cout << endl << endl << "Enter Name: ";
-	cin.ignore();
-	cin.getline(act_name,50);
-	cout << endl << "What Type of Account do you want to open? (C for Checkings, S for Savings): ";
-	cin >> act_type;
-	act_type=toupper(act_type);
-	cout << endl << "Enter Initial Amount: ";
-	cin >> dep;
-	cout << endl << "Account Created";
+	cout << endl << "\t**Create a new user account**";
+	cout << endl << "Enter First Name: ";
+	string fname;
+	cin >> fname;
+
+	cout << endl << endl << "Enter Last Name: ";
+	string lname;
+	cin >> lname;
+
+	BaseAccount* newUser = new Customer(fname,lname);
+
+	inFile.open("account.dat",ios::binary);
+	if(!inFile)
+	{
+		cout << "Something went wrong, the File couldn't be opened. Press any key to continue";
+		return;
+	}
+	while(inFile.read(reinterpret_cast<char *> (&acc), sizeof(account)))
+	{
+		if(acc.retact_num() != n)
+		{
+			outFile.write(reinterpret_cast<char *> (&acc), sizeof(account));
+		}
+	}
+	inFile.close();
+
+	cout << endl << "\tAccount Created";
 }
 
 /**

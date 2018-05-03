@@ -1,7 +1,10 @@
-string encrypt(string m) {
+/**
+ *
+ */
+std::string encrypt(std::string m) {
 	int count,keycount = 0;
-	string key = banking;
-	for(auto i : in) {
+	std::string key = "banking";
+	for(auto i : m) {
 		if(keycount == 7)
 			keycount = 0;
 		m[count] = i+key[keycount];

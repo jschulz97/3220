@@ -1,4 +1,6 @@
 #include<ctime>
+//#include "Users.h"
+using namespace std;
 
 /**
  *
@@ -24,15 +26,16 @@ protected:
 	time_t theTime;
 	struct tm *startTime;
 public:
-	virtual BaseAccount() = 0;
+	BaseAccount() = 0;
 	virtual void display_details() const;
+	
 	void deposit(double);
 	void withdraw(double);
 	void edit();
 	string get_type() const {return type;};
 	int get_act_num() const {return act_num;};
 	double get_balance() const {return balance;};
-	void approve(BaseUser*);
+	//void approve(*BaseUser);
 };
 
 
