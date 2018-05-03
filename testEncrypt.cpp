@@ -5,7 +5,7 @@ using namespace std;
 
 int main() {
 	string b = encrypt("bankingrox");
-	cout << b;
+	cout << b <<endl;
 
 	return 0;
 }

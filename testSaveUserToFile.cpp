@@ -12,8 +12,8 @@
 using namespace std;
 
 int main() {
-	BaseUser* newUser = new Customer("fname","lname");
-	newUser->setID(12345);
+	BaseUser* newUser = new Customer("fname","lname",12345);
+
 	cout << endl << "newUser: " << newUser->getID();
 
 	ofstream outFile;
@@ -26,7 +26,7 @@ int main() {
 
 	//Find end of file
 	outFile.seekp(0,ios::end);
-	cout << outFile.tellp();
+	cout << "\nPos: " << outFile.tellp();
 
 	outFile.write(reinterpret_cast<char *> (newUser), sizeof(BaseUser));
 

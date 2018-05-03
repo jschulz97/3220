@@ -4,7 +4,7 @@
 #include<iomanip>
 #include<string>
 #include<cstdlib>
-#include<conio.h>
+//#include<conio.h>
 
 #include "Users&Accounts.h"
 //#include "Users.h"
@@ -32,7 +32,7 @@ int main() {
 
 /**
  * Allows the user to enter password without it appearing in the terminal
- */
+ *
 string enter_password() {
 	cout << "\nEnter a password and press enter: ";
 	char c;
@@ -44,4 +44,4 @@ string enter_password() {
 	pass = encrypt(pass);
 	cout << endl << "AA" << pass << "AA";
 	return pass;
-}
+}*/

@@ -109,7 +109,7 @@ int main()
   int num; 
   do 
   { 
-    system("cls"); 
+    system("clear");
     cout << endl << "\t!!!Welcome to S&K Bank!!!"; 
     cout << endl << endl << "1) New Account"; 
     cout << endl << endl << "2) Deposit"; 
@@ -119,9 +119,9 @@ int main()
     cout << endl << endl << "6) Close an Account"; 
     cout << endl << endl << "7) Edit the Details of an Account"; 
     cout << endl << endl << "8) Exit"; 
-    cout << endl << endl << "Make Your Choice (1-8) and don't be a smartass and pick something besides these"; 
+    cout << endl << endl << "Make Your Choice (1-8): ";
     cin >> choice; 
-    system("cls"); 
+    system("clear");
     switch(choice) 
     { 
     case '1': 
@@ -156,7 +156,7 @@ int main()
       edit_account(num); 
       break; 
      case '8': 
-      cout << endl << endl << "Thanks Homie"; 
+      cout << endl << endl << "Thanks for choosing S&K Bank!";
       break; 
      default: 
        cout << "\a"; 

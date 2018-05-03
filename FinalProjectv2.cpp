@@ -10,7 +10,7 @@
 #include<cctype>
 #include<iomanip>
 #include<string>
-#include<conio.h> //For hiding password with getch()
+//#include<conio.h> //For hiding password with getch()
 #include<cmath>
 
 #include "Users&Accounts.h"
@@ -73,7 +73,7 @@ int main()
 		int num;
 		do {
 			if(User->get_permissions() == 2) { //Menu for Bank Manager
-				system("cls");
+				system("clear");
 				cout << endl << endl << "\t----------MANAGER MODE----------";
 				cout << endl << "\tWelcome back " << User->getFName();
 				cout << endl << endl << "0) Exit";
@@ -82,7 +82,7 @@ int main()
 				cout << endl << endl << "3) Approve new bank accounts";
 				cout << endl << endl << "Make Your Choice (0-3): ";
 				cin >> choice;
-				system("cls");
+				system("clear");
 				switch(choice)
 				{
 				case '1':
@@ -102,7 +102,7 @@ int main()
 
 			} else { //Menu for regular customers
 
-				system("cls");
+				system("clear");
 				cout << endl << "\t!!!Welcome " << User->getFName() << "!!!";
 				cout << endl << endl << "0) Exit";
 				cout << endl << endl << "1) View Balances";
@@ -112,7 +112,7 @@ int main()
 				cout << endl << endl << "5) Edit User Account Details";
 				cout << endl << endl << "Make Your Choice (0-5): ";
 				cin >> choice;
-				system("cls");
+				system("clear");
 				switch(choice)
 				{
 				case '1':
@@ -164,7 +164,6 @@ BaseUser* sign_in(int usrID, string encrypted_pass) {
 		if(log->getID() == usrID) {
 			found = true;
 			//cout << endl << "AA" << log->getPass() << "AA";
-			cout << "\nDO I REACH HERE";
 			if(encrypted_pass != log->getPass()) {
 				cerr << "\nPassword is incorrect\n";
 				return new Customer();
@@ -240,12 +239,15 @@ string enter_password() {
 	cout << "\nEnter a password and press enter: ";
 	char c;
 	string pass = "";
-	while((c = getch()) != '\r') {
+
+	cin >> pass;
+
+/*	while((c = getch()) != '\r') {
 		pass += c;
 	}
 	cout << endl << "AA" << pass << "AA";
 	pass = encrypt(pass);
-	cout << endl << "AA" << pass << "AA";
+	cout << endl << "AA" << pass << "AA";*/
 	return pass;
 }
 

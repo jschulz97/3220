@@ -12,9 +12,9 @@
 using namespace std;
 
 int main() {
-	BaseUser* 	b1 = new Customer("fred","duever");
+	BaseUser* 	b1 = new Customer("fred","duever",123);
 	BaseUser* 	b2 = new Manager("jacob","smith");
-	Customer	c1 = Customer("jeremy","colozza");
+	Customer	c1 = Customer("jeremy","colozza",345);
 	Manager		m1 = Manager("charlie","renner");
 
 	cout << setw(10) << "\nc1:" << setw(10) << "\tm1:";
