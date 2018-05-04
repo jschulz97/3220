@@ -4,8 +4,10 @@
 using namespace std;
 
 int main() {
-	string b = encrypt("bankingrox");
-	cout << b <<endl;
+	string b;
+	cin >> b;
+
+	cout << encrypt(b) << endl;
 
 	return 0;
 }

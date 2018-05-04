@@ -64,10 +64,10 @@ protected:
 	int act_num;
 	double balance;
 	std::string type;
+	bool approved = false;
 public:
 	//BaseAccount();
 	virtual void display_details() const = 0;
-	bool approved = false;
 	
 	void deposit(double);
 	void withdraw(double);
@@ -75,7 +75,7 @@ public:
 	std::string get_type() const {return type;};
 	int get_act_num() const {return act_num;};
 	double get_balance() const {return balance;};
-	void approve(BaseUser *usr);
+	//void approve(BaseUser *usr);
 };
 
 
@@ -153,11 +153,7 @@ private:
 	void calc_limit();
 	int mon;
 public:
-	Savings();
-	Savings(int,double,bool,int,double,int);
-	int get_mon() {return mon ;};
-	int get_trans() {return transactions_left;};
-	double get_int_rate() {return interest_rate;};
+	Savings(double x = 0.0,bool app = false);
 	void withdraw(double);
 	void deposit(double);
 	void display_details() const;
@@ -171,8 +167,8 @@ Savings::Savings() : BaseAccount() {
 	type = "Savings";
 	approved = false;
 
-	time_t theTime = time(NULL);
-	struct tm *startTime = localtime(&theTime);
+	theTime = time(NULL);
+	startTime = localtime(&theTime);
 	mon = startTime->tm_mon;
 }
 
@@ -180,14 +176,11 @@ Savings::Savings() : BaseAccount() {
 /**
  * 
  */
-Savings::Savings(int act,double x,bool app,int m,double inter,int tr) : BaseAccount() {
-	act_num = act;
+Savings::Savings(double x,bool app,int m) : BaseAccount() {
 	balance = x;
 	type = "Savings";
 	approved = app;
 	mon = m;
-	interest_rate = inter;
-	transactions_left = tr;
 }
 
 
@@ -244,9 +237,8 @@ void Savings::display_details() const {
  */
 void Savings::calc_limit() {
 	//Save previously fetched month, get current time
-	int month = mon;
-
-	time_t theTime = time(NULL);
+	int month = startTime->tm_mon;
+	//theTime = time(NULL);
 	struct tm *aTime = localtime(&theTime);
 
 	//If it's a different month, reset the count
@@ -268,11 +260,10 @@ private:
 	int card_status = 0;
 public:
 	Checkings();
-	Checkings(int,double,bool,int);
-	int get_card_status() {return card_status;};
+	Checkings(double);
 	void request_debit_card();
 	void display_details() const;
-	void approve_debit_card(BaseUser*);
+	//void approve_debit_card(BaseUser*);
 };
 
 
@@ -289,12 +280,10 @@ Checkings::Checkings() : BaseAccount() {
 /**
  * 
  */
-Checkings::Checkings(int act,double x,bool app,int card) : BaseAccount() {
-	act_num = act;
+Checkings::Checkings(double x,bool app) : BaseAccount() {
 	balance = x;
 	type = "Checkings";
-	approved = app;
-	card_status = card;
+	approved = false;
 }
 
 
@@ -352,8 +341,8 @@ void Checkings::display_details() const {
  */
 class Customer : public BaseUser {
 public:
-	Checkings* myCheckings = NULL;
-	Savings* mySavings = NULL;
+	Checkings* myCheckings;
+	Savings* mySavings;
 	//std::vector<BaseLoan*> loanVector;
 
 	Customer() {};
