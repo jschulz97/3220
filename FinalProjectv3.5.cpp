@@ -11,7 +11,7 @@
 #include<cctype>
 #include<iomanip>
 #include<string>
-//#include<conio.h> //For hiding password with getch()
+#include<conio.h> //For hiding password with getch()
 #include<cmath>
 
 #include "Users&Accounts.h"
@@ -39,7 +39,7 @@ void write_account();*/
 int main()
 {
 	cout << endl << "\t!!!Welcome to S&K Bank!!!";
-	BaseUser* User = new Customer();
+	BaseUser* user = new Customer();
 
 	//Log in loop
 	do {
@@ -61,23 +61,23 @@ int main()
 
 				string password = enter_password();
 
-				User = sign_in(idnum,password);
+				user = sign_in(idnum,password);
 			}
 		} catch(error e) {
 			e.display();
 		}
 
-	} while(User->getID() == 1); //default value for new BaseUser
+	} while(user->getID() == 1); //default value for new BaseUser
 
 
-	if(User->getID() != 1) {
+	if(user->getID() != 1) {
 		char choice;
 		int num;
 		do {
-			if(User->get_permissions() == 2) { //Menu for Bank Manager
+			if(user->get_permissions() == 2) { //Menu for Bank Manager
 				system("cls");
 				cout << endl << endl << "\t----------MANAGER MODE----------";
-				cout << endl << "\tWelcome back " << User->getFName();
+				cout << endl << "\tWelcome back " << user->getFName();
 				cout << endl << endl << "0) Exit";
 				cout << endl << endl << "1) Display all accounts";
 				cout << endl << endl << "2) Close a user account";
@@ -88,16 +88,14 @@ int main()
 				switch(choice)
 				{
 				case '1':
-					user->
-					write_user_to_file(BaseUser*);
+					display_all_accounts();
 					break;
 				case '2':
-					user->
-					write_user_to_file(BaseUser*);
+					display_all_accounts();
+					close_user_account();
 					break;
 				case '3':
-					user->
-					write_user_to_file(BaseUser*);
+					approve_pending_accounts();
 					break;
 				 default:
 					 cout << "\a";
@@ -108,7 +106,7 @@ int main()
 			} else { //Menu for regular customers
 
 				system("cls");
-				cout << endl << "\t!!!Welcome " << User->getFName() << "!!!";
+				cout << endl << "\t!!! Welcome " << user->getFName() << " !!!";
 				cout << endl << endl << "0) Exit";
 				cout << endl << endl << "1) View Balances";
 				cout << endl << endl << "2) Deposit";
@@ -121,8 +119,7 @@ int main()
 				switch(choice)
 				{
 				case '1':
-					user->
-					write_user_to_file(BaseUser*);
+					user->display_details();
 					break;
 				case '2':
 					User->
@@ -160,25 +157,31 @@ int main()
  *
  */
 BaseUser* sign_in(int usrID, string encrypted_pass) {
+	//Open logins.dat
 	ifstream loginFile;
 	loginFile.open("logins.dat");
 	if(!loginFile)
 	{
-		cout << "Something went wrong, logins.dat couldn't be opened. Press any key to continue.";
+		cout << "Something went wrong, logins.dat couldn't be opened in sign_in(). Press any key to continue.";
 		return false;
 	}
 
-	Login* log = new Login(1,"1");
+	//See if password matches one in file
 	bool found = false;
-	while(loginFile.read(reinterpret_cast<char *> (log), sizeof(Login))) {
-		if(log->getID() == usrID) {
+	string word;
+	while(loginFile >> word) {
+		if(stoi(word) == usrID) {
 			found = true;
 			//cout << endl << "AA" << log->getPass() << "AA";
-			if(encrypted_pass != log->getPass()) {
+			string p;
+			loginFile >> p;
+			if(encrypted_pass != p) {
 				cerr << "\nPassword is incorrect\n";
 				return new Customer();
 			}
 		}
+		string temp;
+		getline(loginFile,temp);
 	}
 	loginFile.close();
 
@@ -187,28 +190,9 @@ BaseUser* sign_in(int usrID, string encrypted_pass) {
 		return new Customer();
 	}
 
-	ifstream userFile;
-	userFile.open("users.dat");
-	if(!userFile)
-	{
-		cout << "Something went wrong, users.dat couldn't be opened. Press any key to continue.";
-		return new Customer();
-	}
 
-	if(usrID == 100000) {
-		BaseUser* bu = new Manager(); //Must allocate or bu is empty
-		while(userFile.read(reinterpret_cast<char *> (bu), sizeof(BaseUser))) {
-			if(bu->getID() == usrID)
-				return bu;
-		}
-	} else {
-		BaseUser* bu = new Customer(); //Must allocate or bu is empty
-		while(userFile.read(reinterpret_cast<char *> (bu), sizeof(BaseUser))) {
-			if(bu->getID() == usrID)
-				return bu;
-		}
-	}
-	userFile.close();
+	//Find user data, return user object pointer
+	return get_user_from_file(usrID);
 }
 
 
@@ -222,6 +206,7 @@ int getNextID() {
 	if(!inFile)
 	{
 		cout << "Something went wrong, logins.dat couldn't be opened. Press any key to continue.";
+		inFile.close();
 		return 0;
 	}
 
@@ -229,11 +214,13 @@ int getNextID() {
 	int nextID = 900000;
 
 	//Find next ID by taking highest + 1
-	while(inFile.read(reinterpret_cast<char *> (log), sizeof(Login))) {
-		cout << endl << log->getID();
-		if(log->getID() >= nextID) {
-			nextID = log->getID() + 1;
+	string word;
+	while(inFile >> word) {
+		if(stoi(word) >= nextID) {
+			nextID = stoi(word) + 1;
 		}
+		string temp;
+		getline(inFile,temp);
 	}
 
 	inFile.close();
@@ -251,12 +238,12 @@ string enter_password() {
 
 	cin >> pass;
 
-/*	while((c = getch()) != '\r') {
+	while((c = getch()) != '\r') {
 		pass += c;
 	}
-	cout << endl << "AA" << pass << "AA";
+	//cout << endl << "AA" << pass << "AA";
 	pass = encrypt(pass);
-	cout << endl << "AA" << pass << "AA";*/
+	//cout << endl << "AA" << pass << "AA";
 	return pass;
 }
 
@@ -278,45 +265,31 @@ void create_user_account() {
 	//Use helper function to figure out next available ID
 	int id;
 	if(!(id = getNextID())) {
-		cout << "\nUser creation failed. Press any key to continue.\n";
+		cout << "\nUser creation failed in create_user_account() & getNextID(). Press any key to continue.\n";
 		return;
 	}
 	cout << "\nYour user ID will be: " << id;
 
-	//Add user to user list
+	//Make new user - will always be a customer
 	BaseUser* newUser = new Customer(fname,lname,id);
 
-	ofstream outFile;
-	outFile.open("users.dat",ios::app|ios::binary);
-	if(!outFile)
-	{
-		cout << "Something went wrong, users.dat couldn't be opened. Press any key to continue.";
-		return;
-	}
-
-	//Find end of file
-	outFile.seekp(0,ios::end);
-	outFile.write(reinterpret_cast<char *> (newUser), sizeof(BaseUser));
-	outFile.close();
+	//Self explanatory
+	write_user_to_file(newUser);
 
 	//Create and save password
 	string pass = enter_password();
 
-	//Create new login object to save to file
-	Login* log = new Login(id,pass);
-
 	//Save login object to file
-	outFile.open("logins.dat",ios::app|ios::binary);
+	outFile.open("logins.dat",ios::app);
 	if(!outFile)
 	{
-		cout << "Something went wrong, logins.dat couldn't be opened. Press any key to continue.";
+		cout << "Something went wrong, logins.dat couldn't be opened in create_user_account(). Press any key to continue.";
 		return;
 	}
-	outFile.seekp(0,ios::end);
-	outFile.write(reinterpret_cast<char *> (log), sizeof(Login));
+	outFile << endl << id << " " << pass;
 	outFile.close();
 
-	cout << endl << "\tAccount Created. User ID: " << id;
+	cout << endl << "\n\tAccount Created. User ID: " << id;
 }
 
 
@@ -342,7 +315,7 @@ void display_balances(BaseUser* usr) {
 void write_user_to_file(BaseUser* usr) {
 	delete_user_account(usr);
 	ofstream of("users.dat",ios::app);
-	if(!of) {cout << "didnt open file";};
+	if(!of) {cerr << "\nCould not open file users.dat in write_user_to_file()";};
 
 	if(usr->getID() == 100000) {
 		ofstream of("users.dat",ios::app);
@@ -377,10 +350,10 @@ void write_user_to_file(BaseUser* usr) {
  */
 BaseUser* get_user_from_file(int id) {
 	ifstream is("users.dat");
-	if(!is) {cout << "could not open file";};
+	if(!is) {cout << "\nCould not open file users.dat in get_user_from_file()";};
 	string input;
 	while(is >> input) {
-		cout << "\nCheck if: " << endl << input << endl << to_string(id);
+		//cout << "\nCheck if: " << endl << input << endl << to_string(id);
 		if(input == to_string(id)) {
 			if(input == "100000") {
 				string fn,ln;
@@ -413,14 +386,13 @@ BaseUser* get_user_from_file(int id) {
 				return c;
 			}
 		} else {
-			cout << "\nNOPE";
 			//advance file pointer to next line
 			string temp;
 			/*do {
 				is >> temp;
 			} while(temp != "|");*/
 			getline(is,temp);
-			cout << "\nThis is getline: " <<  temp;
+			//cout << "\nThis is getline: " <<  temp;
 		}
 	}
 	cout << "\nUnable to get user from file";
@@ -436,7 +408,7 @@ bool delete_user_account(BaseUser* user) //delete an account
 	inFile.open("users.dat");
 	if(!inFile)
 	{
-		cout << "Something went wrong, the File couldn't be opened. Press any key to continue";
+		cout << "Something went wrong, the File users.dat couldn't be opened. Press any key to continue";
 		return false;
 	}
 	outFile.open("temp.dat");
@@ -461,10 +433,8 @@ bool delete_user_account(BaseUser* user) //delete an account
 	remove("users.dat");
 	rename("temp.dat", "users.dat");
 	if(del){
-		cout << endl << endl << "\tAccount Deleted";
 		return true;
 	} else {
-		cout << endl << endl << "\tAccount Not Found";
 		return false;
 	}
 }
