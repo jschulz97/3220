@@ -32,9 +32,9 @@ void write_user_to_file(BaseUser*);
 BaseUser* get_user_from_file(int id);
 
 void delete_user_account(BaseUser*);
-/*void display_account(int);
+void display_account(int);
 void edit_account(int);
-void write_account();*/
+/*void write_account();*/
 
 int main()
 {
@@ -119,22 +119,31 @@ int main()
 				switch(choice)
 				{
 				case '1':
-					user->display_details();
+
+					int act;
+					cin >> act
+					display_account(act);
 					break;
 				case '2':
-					User->
+
+					double dep;
+					BaseAccount->deposit(dep);
 					write_user_to_file(BaseUser*);
 					break;
 				case '3':
 
+					double wit;
+					BaseAccount->withdraw(wit);
 					write_user_to_file(BaseUser*);
 					break;
 				case '4':
-
+					create_user_account();
 					write_user_to_file(BaseUser*);
 					break;
 				case '5':
 
+					int edit;
+					edit_account(edit);
 					write_user_to_file(BaseUser*);
 					break;
 				 default:
