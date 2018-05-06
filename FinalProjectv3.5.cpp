@@ -1,6 +1,6 @@
 //============================================================================
-// Name        : 5.cpp
-// Author      : Andrew
+// Name        : FinalProjectv3.5.cpp
+// Author      : Andrew Kirkham, Jeff Schulz
 // Version     :
 // Copyright   : Your copyright notice
 // Description : Hello World in C++, Ansi-style
