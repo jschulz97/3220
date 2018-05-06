@@ -30,16 +30,14 @@ void display_balances(BaseUser*);
 BaseUser* sign_in(int,string);
 void write_user_to_file(BaseUser*);
 BaseUser* get_user_from_file(int id);
-
 bool delete_user_account(BaseUser*);
 void display_all_accounts();
-void edit_account(int);
-/*void write_account();*/
+void approve_pending_accounts(BaseUser*);
 
 int main()
 {
 	system("cls");
-	cout << endl << "\t!!!Welcome to S&K Bank!!!";
+	cout << endl << "\t!!! Welcome to S&K Bank !!!";
 	BaseUser* usr = new Customer();
 
 	//Log in loop
@@ -79,7 +77,7 @@ int main()
 				Manager *user = static_cast<Manager*>(usr);
 				system("cls");
 				cout << endl << endl << "\t----------MANAGER MODE----------";
-				cout << endl << "\tWelcome back " << user->getFName();
+				cout << endl << "\nWelcome back " << user->getFName();
 				cout << endl << endl << "0) Exit";
 				cout << endl << endl << "1) Display all accounts";
 				cout << endl << endl << "2) Close a user account";
@@ -94,10 +92,13 @@ int main()
 					break;
 				case '2':
 					display_all_accounts();
-					//close_user_account();
+					cout << "\n\nType the user ID # of the account to delete: ";
+					int num;
+					cin >> num;
+					delete_user_account(get_user_from_file(num));
 					break;
 				case '3':
-					//approve_pending_accounts();
+					approve_pending_accounts(user);
 					break;
 				case '0':
 					break;
@@ -442,6 +443,34 @@ bool delete_user_account(BaseUser* user) //delete an account
 	outFile.close();
 	remove("users.dat");
 	rename("temp.dat", "users.dat");
+
+	inFile.open("logins.dat");
+	if(!inFile)
+	{
+		cout << "Something went wrong, the File users.dat couldn't be opened. Press any key to continue";
+		return false;
+	}
+	outFile.open("temp.dat");
+	inFile.seekg(0,ios::beg);
+
+	while(inFile >> input)
+	{
+		if(input == to_string(user->getID()))
+		{
+			string temp;
+			getline(inFile,temp);
+			del = true;
+		} else {
+			string line;
+			getline(inFile,line);
+			outFile << input + line << endl;
+		}
+	}
+	inFile.close();
+	outFile.close();
+	remove("logins.dat");
+	rename("temp.dat", "logins.dat");
+
 	if(del){
 		return true;
 	} else {
@@ -453,24 +482,81 @@ bool delete_user_account(BaseUser* user) //delete an account
 /**
  * yes
  */
-void display_all_accounts() //allows the user to see all their accounts
-{
-/*	account acc;
-	ifstream inFile;
-	inFile.open("account.dat",ios::binary);
-	if(!inFile)
-	{
-		cout << "Something went wrong, the File couldn't be opened. Press any key to continue";
-		return;
+void display_all_accounts() {
+	ifstream logins("logins.dat");
+	Customer *cust = new Customer();
+
+	string word;
+	while(logins >> word) {
+		if(stoi(word) != 100000) {
+			cust = static_cast<Customer*>(get_user_from_file(stoi(word)));
+			cout << endl << endl << cust->getID() << " - " << cust->getFName() << " " << cust->getLName();
+			if(cust->mySavings != NULL) {
+				cout << endl << endl << "\tSavings: #" <<  cust->mySavings->get_act_num()
+					<< "\n\tBalance: " << cust->mySavings->get_balance()
+					<< "\n\tInterest Rate: " << cust->mySavings->get_int_rate() 
+					<< "\n\tTransactions left in month: " << cust->mySavings->get_trans();
+			}
+			if(cust->myCheckings != NULL) {
+				cout << endl << endl << "\tCheckings: #" <<  cust->myCheckings->get_act_num()
+					<< "\n\tBalance: " << cust->myCheckings->get_balance()
+					<< "\n\tDebit card status: " << cust->myCheckings->get_card_status();
+			}
+		}
+		string temp;
+		getline(logins,temp);
 	}
-	cout << endl << endl << "\t\tAccount List" << endl << endl;
-	cout << "Account Number      NAME           Type  Balance" << endl << endl;
-	while(inFile.read(reinterpret_cast<char *> (&acc), sizeof(account)))
-	{
-		acc.report();
-	}
-	inFile.close();*/
+
+	logins.close();
 }
 
 
+/**
+ *
+ */
+void approve_pending_accounts(BaseUser *manager) {
+	ifstream logins("logins.dat");
+	Customer *cust = new Customer();
+	vector<BaseUser*> savingsVec;
+	vector<BaseUser*> checkingsVec;
 
+	string word;
+	while(logins >> word) {
+		if(stoi(word) != 100000) {
+			cust = static_cast<Customer*>(get_user_from_file(stoi(word)));
+			if(cust->mySavings != NULL) {
+				if(!(cust->mySavings->approved)) {
+					cout << endl << endl << cust->getID() << " - " << cust->getFName() << " " << cust->getLName();
+					savingsVec.push_back(cust);
+					cout << endl << "\tSavings";
+				}
+			}
+			if(cust->myCheckings != NULL) {
+				if(!(cust->myCheckings->approved)) {
+					cout << endl << endl << cust->getID() << " - " << cust->getFName() << " " << cust->getLName();
+					checkingsVec.push_back(cust);
+					cout << endl << "\tCheckings";
+				}
+			}
+		}
+		string temp;
+		getline(logins,temp);
+	}
+
+	cout << "\n\nApprove all? (Y/N): ";
+	char c;
+	cin >> c;
+	if(c == 'y' || c == 'Y') {
+		for(auto i : savingsVec) {
+			static_cast<Customer*>(i)->mySavings->approve(manager);
+			write_user_to_file(i);
+		}
+		for(auto i : checkingsVec) {
+			static_cast<Customer*>(i)->myCheckings->approve(manager);
+			write_user_to_file(i);
+		}
+	}
+
+
+	logins.close();
+}

@@ -61,8 +61,8 @@ public:
  */
 class BaseAccount {
 protected:
-	int act_num;
-	double balance;
+	int act_num = 0;
+	double balance = 0;
 	std::string type;
 public:
 	//BaseAccount();
@@ -90,12 +90,12 @@ int BaseAccount::withdraw(double x) {
 			throw error("Attempt to overdraw");
 		if(x <= 0) 
 			throw error("Not a valid amount to withdraw");
+		balance -= x;
+		return 1;
 	} catch(error e){
 		e.display();
 		return 0;
 	}
-	balance -= x;
-	return 1;
 }
 
 
@@ -108,12 +108,12 @@ int BaseAccount::deposit(double x) {
 			throw error("Account is not yet approved");
 		if(x <= 0) 
 			throw error("Not a valid amount to deposit");
+		balance += x;
+		return 1;
 	} catch(error e){
 		e.display();
 		return 0;
 	}
-	balance += x;
-	return 1;
 }
 
 
@@ -172,6 +172,7 @@ Savings::Savings() : BaseAccount() {
 	balance = 0.0;
 	type = "Savings";
 	approved = false;
+	interest_rate = 0.0;
 
 	time_t theTime = time(NULL);
 	struct tm *startTime = localtime(&theTime);
@@ -201,7 +202,8 @@ int Savings::withdraw(double x) {
 		if(transactions_left <= 0)
 			throw error("Reached Transaction Limit");
 		int ret = BaseAccount::withdraw(x);
-		calc_limit();
+		if(ret)
+			calc_limit();
 		return ret;
 	} catch(error e) {
 		e.display();
@@ -218,7 +220,8 @@ int Savings::deposit(double x) {
 		if(transactions_left <= 0)
 			throw error("Reached Transaction Limit");
 		int ret = BaseAccount::deposit(x);
-		calc_limit();
+		if(ret)
+			calc_limit();
 		return ret;
 	} catch(error e) {
 		e.display();
@@ -234,15 +237,14 @@ void Savings::display_details() const {
 	try {
 		if(!approved)
 			throw error("Savings account is not yet approved for this user");
+		std::cout << std::endl << "Type of Account: " << type;
+		std::cout << std::endl << "Account Number: " << act_num;	
+		std::cout << std::endl << "Balance: " << balance;
+		std::cout << std::endl << "Interest Rate: " << interest_rate;
+		std::cout << std::endl << "Transactions left this month: " << transactions_left << std::endl;
 	} catch(error e) {
 		e.display();
 	}
-
-	std::cout << std::endl << "Type of Account: " << type;
-	std::cout << std::endl << "Account Number: " << act_num;	
-	std::cout << std::endl << "Balance: " << balance;
-	std::cout << std::endl << "Interest Rate: " << interest_rate;
-	std::cout << std::endl << "Transactions left this month: " << transactions_left << std::endl;
 }
 
 
@@ -290,6 +292,7 @@ Checkings::Checkings() : BaseAccount() {
 	balance = 0;
 	type = "Checkings";
 	approved = false;
+	card_status = 0;
 }
 
 
@@ -341,14 +344,13 @@ void Checkings::display_details() const {
 	try {
 		if(!approved)
 			throw error("Checkings account is not yet approved for this user");
+		std::cout << std::endl << "Type of Account: " << type;
+		std::cout << std::endl << "Account Number: " << act_num;	
+		std::cout << std::endl << "Balance: " << balance;
+		std::cout << std::endl << "Debit card status: " << card_status;
 	} catch(error e) {
 		e.display();
 	}
-
-	std::cout << std::endl << "Type of Account: " << type;
-	std::cout << std::endl << "Account Number: " << act_num;	
-	std::cout << std::endl << "Balance: " << balance;
-	std::cout << std::endl << "Debit card status: " << card_status;
 }
 
 
@@ -421,20 +423,26 @@ void Customer::deposit() {
 		{
 		case 1: //Savings
 			double amt;
-			do{ //Loop until deposit succeeds
-				std::cout << "\nEnter Amount: ";
-				std::cin >> amt;
-			} while(!(mySavings->deposit(amt)));
-			std::cout << "\n\tSuccessfully deposited.";
+			std::cout << "\nEnter Amount: ";
+			std::cin >> amt;
+			if(mySavings->deposit(amt))
+				std::cout << "\n\tSuccessfully deposited.";
+			else
+				std::cout << "\n\tDeposit failed.";
+			std::cin.ignore();
+			std::cin.get();
 			break;
 		case 2: //Checkings
 			if(two) {
 				double amt;
-				do{ //Loop until deposit succeeds
-					std::cout << "\nEnter Amount: ";
-					std::cin >> amt;
-				} while(!(myCheckings->deposit(amt)));
-				std::cout << "\n\tSuccessfully deposited.";
+				std::cout << "\nEnter Amount: ";
+				std::cin >> amt;
+				if(myCheckings->deposit(amt))
+					std::cout << "\n\tSuccessfully deposited.";
+				else
+					std::cout << "\n\tDeposit failed.";
+				std::cin.ignore();
+				std::cin.get();
 			} else {
 				std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
 			}
@@ -486,20 +494,28 @@ void Customer::deposit() {
 		{
 		case 1: //Savings
 		double amt;
-			do{ //Loop until withdrawal succeeds
-				std::cout << "\nEnter Amount: ";
-				std::cin >> amt;
-			} while(!(mySavings->withdraw(amt)));
-			std::cout << "\n\tSuccessfully withdrew.";
+			
+			std::cout << "\nEnter Amount: ";
+			std::cin >> amt;
+			if(mySavings->withdraw(amt))
+				std::cout << "\n\tSuccessfully withdrew.";
+			else 
+				std::cout << "\n\tWithdrawal failed.";
+			std::cin.ignore();
+			std::cin.get();
 			break;
 		case 2: //Checkings
 			if(two) {
 				double amt;
-				do{ //Loop until withdrawal succeeds
-					std::cout << "\nEnter Amount: ";
-					std::cin >> amt;
-				} while(!(myCheckings->withdraw(amt)));
-				std::cout << "\n\tSuccessfully withdrew.";
+				
+				std::cout << "\nEnter Amount: ";
+				std::cin >> amt;
+				if(myCheckings->withdraw(amt))
+					std::cout << "\n\tSuccessfully withdrew.";
+				else 
+					std::cout << "\n\tWithdrawal failed.";
+				std::cin.ignore();
+				std::cin.get();
 			} else {
 				std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
 			}
@@ -558,11 +574,15 @@ void Customer::edit_account() {
 		case 2: //Delete Savings
 			mySavings = NULL;
 			std::cout << "\n\tSavings account deleted";
+			std::cin.ignore();
+				std::cin.get();
 			break;
 		case 3: //Delete Checkings
 			if(three) {
 				myCheckings = NULL;
 				std::cout << "\n\tCheckings account deleted";
+				std::cin.ignore();
+				std::cin.get();
 			} else {
 				std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
 			}
@@ -614,11 +634,15 @@ void Customer::add_account() {
 		case 1: //Add Savings
 			mySavings = new Savings();
 			std::cout << "\n\tSavings account created, waiting on approval of bank manager.";
+			std::cin.ignore();
+				std::cin.get();
 			break;
 		case 2: //Add Checkings
 			if(two) {
 				myCheckings = new Checkings();
 				std::cout << "\n\tCheckings account created, waiting on approval of bank manager.";
+				std::cin.ignore();
+				std::cin.get();
 			} else {
 				std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
 			}
