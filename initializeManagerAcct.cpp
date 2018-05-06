@@ -15,16 +15,13 @@ using namespace std;
 string enter_password();
 
 int main() {
-	ofstream out("users.dat",ios::binary);
-	//out.open("users.dat");
-	Manager usr = Manager("Stevie","Wonder");
-	out.write(reinterpret_cast<char *> (&usr), sizeof(BaseUser));
+	ofstream out("users.dat");
+	out << "900020 Andy Kirk\n900015 Jeff Schulz Savings 654321 4500 1 5 0.01 4 Checkings 123456 2000 1 1\n900021 Tom Smith\n100000 Stevie Wonder\n";	
 	out.close();
 
-	ofstream outs("logins.dat",ios::binary);
-	//out.open("logins.dat");
-	Login log = Login(100000,encrypt("bankingrox"));
-	outs.write(reinterpret_cast<char *> (&log), sizeof(Login));
+	ofstream outs("logins.dat");
+	outs << "900020 ##1\n900015 ##1\n900021 ##1\n100000 !|93/9+\n";
+
 	outs.close();
 	cout << "\nDONE\n";
 	return 0;

@@ -69,8 +69,8 @@ public:
 	virtual void display_details() const = 0;
 	bool approved = false;
 	
-	void deposit(double);
-	void withdraw(double);
+	int deposit(double);
+	int withdraw(double);
 	void edit();
 	std::string get_type() const {return type;};
 	int get_act_num() const {return act_num;};
@@ -82,7 +82,7 @@ public:
 /**
  * 
  */
-void BaseAccount::withdraw(double x) {
+int BaseAccount::withdraw(double x) {
 	try {
 		if(!approved)
 			throw error("Account is not yet approved");
@@ -92,16 +92,17 @@ void BaseAccount::withdraw(double x) {
 			throw error("Not a valid amount to withdraw");
 	} catch(error e){
 		e.display();
-		throw;
+		return 0;
 	}
 	balance -= x;
+	return 1;
 }
 
 
 /**
  * 
  */
-void BaseAccount::deposit(double x) {
+int BaseAccount::deposit(double x) {
 	try {
 		if(!approved)
 			throw error("Account is not yet approved");
@@ -109,9 +110,10 @@ void BaseAccount::deposit(double x) {
 			throw error("Not a valid amount to deposit");
 	} catch(error e){
 		e.display();
-		throw;
+		return 0;
 	}
 	balance += x;
+	return 1;
 }
 
 
@@ -158,8 +160,8 @@ public:
 	int get_mon() {return mon ;};
 	int get_trans() {return transactions_left;};
 	double get_int_rate() {return interest_rate;};
-	void withdraw(double);
-	void deposit(double);
+	int withdraw(double);
+	int deposit(double);
 	void display_details() const;
 };
 
@@ -194,14 +196,16 @@ Savings::Savings(int act,double x,bool app,int m,double inter,int tr) : BaseAcco
 /**
  * 
  */
-void Savings::withdraw(double x) {
+int Savings::withdraw(double x) {
 	try {
 		if(transactions_left <= 0)
 			throw error("Reached Transaction Limit");
-		BaseAccount::withdraw(x);
+		int ret = BaseAccount::withdraw(x);
 		calc_limit();
+		return ret;
 	} catch(error e) {
 		e.display();
+		return 0;
 	}
 }
 
@@ -209,14 +213,16 @@ void Savings::withdraw(double x) {
 /**
  * 
  */
-void Savings::deposit(double x) {
+int Savings::deposit(double x) {
 	try {
 		if(transactions_left <= 0)
 			throw error("Reached Transaction Limit");
-		BaseAccount::deposit(x);
+		int ret = BaseAccount::deposit(x);
 		calc_limit();
+		return ret;
 	} catch(error e) {
 		e.display();
+		return 0;
 	}
 }
 
@@ -227,15 +233,16 @@ void Savings::deposit(double x) {
 void Savings::display_details() const {
 	try {
 		if(!approved)
-			throw error("Account is not yet approved");
+			throw error("Savings account is not yet approved for this user");
 	} catch(error e) {
 		e.display();
 	}
 
-	std::cout << std::endl << "Account Number: " << act_num;
 	std::cout << std::endl << "Type of Account: " << type;
+	std::cout << std::endl << "Account Number: " << act_num;	
 	std::cout << std::endl << "Balance: " << balance;
-	std::cout << std::endl << "Interest Rate: " << interest_rate << std::endl;
+	std::cout << std::endl << "Interest Rate: " << interest_rate;
+	std::cout << std::endl << "Transactions left this month: " << transactions_left << std::endl;
 }
 
 
@@ -304,7 +311,7 @@ Checkings::Checkings(int act,double x,bool app,int card) : BaseAccount() {
 void Checkings::request_debit_card() {
 	try {
 		if(!approved)
-			throw error("Account is not yet approved");
+			throw error("Checkings account is not yet approved for this user");
 		card_status = -1; //Card status -1 means card is waiting on approval
 	} catch(error e) {
 		e.display();
@@ -333,14 +340,15 @@ void Checkings::approve_debit_card(BaseUser *usr) {
 void Checkings::display_details() const {
 	try {
 		if(!approved)
-			throw error("Account is not yet approved");
+			throw error("Checkings account is not yet approved for this user");
 	} catch(error e) {
 		e.display();
 	}
 
-	std::cout << std::endl << "Account Number: " << act_num;
 	std::cout << std::endl << "Type of Account: " << type;
+	std::cout << std::endl << "Account Number: " << act_num;	
 	std::cout << std::endl << "Balance: " << balance;
+	std::cout << std::endl << "Debit card status: " << card_status;
 }
 
 
@@ -348,7 +356,7 @@ void Checkings::display_details() const {
 /****************************************************************************************************/
 
 /**
- *
+ * Customer, a type of BaseUser
  */
 class Customer : public BaseUser {
 public:
@@ -359,11 +367,275 @@ public:
 	Customer() {};
 	Customer(std::string fn, std::string ln, int i) : BaseUser(fn,ln,i) {};
 	int get_permissions() {return 1;};
+	void edit_account();
+	void add_account();
+	void deposit();
+	void withdraw();
+	void display_account_details();
 };
 
 
 /**
- *
+ * Displays all bank account details
+ */
+void Customer::display_account_details() {
+	if(mySavings != NULL)
+		mySavings->display_details();
+	if(myCheckings != NULL)
+		myCheckings->display_details();
+}
+
+
+/**
+ * Handles deposit with dynamic menu
+ */
+void Customer::deposit() {
+	bool swap = false;
+	bool two = false;
+	int choice = 1;
+	while(choice != 0) {
+		system("cls");
+		std::cout << std::endl << "\tChoose an account to deposit to: ";
+		std::cout << std::endl << std::endl << "0) Exit to main menu";
+		if(mySavings != NULL && myCheckings == NULL) {
+			std::cout << std::endl << std::endl << "1) Savings";
+		} else if(mySavings == NULL && myCheckings != NULL) {
+			swap = true;
+			std::cout << std::endl << std::endl << "1) Checkings";
+		} else if(mySavings == NULL && myCheckings == NULL) {
+			std::cout << "\n\nNo accounts exist";
+		} else {
+			two = true;
+			std::cout << std::endl << std::endl << "1) Savings";
+			std::cout << std::endl << std::endl << "2) Checkings";
+		}
+		std::cout << std::endl << std::endl << "Make Your Choice: ";
+		std::cin >> choice;
+		system("cls");
+
+		if(swap && choice == 1) { //Correct for menu dynamics
+			choice = 2;
+		}
+
+		switch(choice)
+		{
+		case 1: //Savings
+			double amt;
+			do{ //Loop until deposit succeeds
+				std::cout << "\nEnter Amount: ";
+				std::cin >> amt;
+			} while(!(mySavings->deposit(amt)));
+			std::cout << "\n\tSuccessfully deposited.";
+			break;
+		case 2: //Checkings
+			if(two) {
+				double amt;
+				do{ //Loop until deposit succeeds
+					std::cout << "\nEnter Amount: ";
+					std::cin >> amt;
+				} while(!(myCheckings->deposit(amt)));
+				std::cout << "\n\tSuccessfully deposited.";
+			} else {
+				std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
+			}
+			break;
+		case 0:
+			std::cout << "\n\nLeaving deposit";
+			break;
+		default:
+			std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
+			break;
+		}
+	}
+
+}
+
+
+/**
+ * Handles withdrawal with dynamic menu
+ */
+ void Customer::withdraw() {
+ 	bool swap = false;
+	bool two = false;
+	int choice = 1;
+	while(choice != 0) {
+		system("cls");
+		std::cout << std::endl << "\tChoose an account to withdraw from: ";
+		std::cout << std::endl << std::endl << "0) Exit to main menu";
+		if(mySavings != NULL && myCheckings == NULL) {
+			std::cout << std::endl << std::endl << "1) Savings";
+		} else if(mySavings == NULL && myCheckings != NULL) {
+			swap = true;
+			std::cout << std::endl << std::endl << "1) Checkings";
+		} else if(mySavings == NULL && myCheckings == NULL) {
+			std::cout << "\n\nNo accounts exist";
+		} else {
+			two = true;
+			std::cout << std::endl << std::endl << "1) Savings";
+			std::cout << std::endl << std::endl << "2) Checkings";
+		}
+		std::cout << std::endl << std::endl << "Make Your Choice: ";
+		std::cin >> choice;
+		system("cls");
+
+		if(swap && choice == 1) { //Correct for menu dynamics
+			choice = 2;
+		}
+
+		switch(choice)
+		{
+		case 1: //Savings
+		double amt;
+			do{ //Loop until withdrawal succeeds
+				std::cout << "\nEnter Amount: ";
+				std::cin >> amt;
+			} while(!(mySavings->withdraw(amt)));
+			std::cout << "\n\tSuccessfully withdrew.";
+			break;
+		case 2: //Checkings
+			if(two) {
+				double amt;
+				do{ //Loop until withdrawal succeeds
+					std::cout << "\nEnter Amount: ";
+					std::cin >> amt;
+				} while(!(myCheckings->withdraw(amt)));
+				std::cout << "\n\tSuccessfully withdrew.";
+			} else {
+				std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
+			}
+			break;
+		case 0:
+			std::cout << "\n\nLeaving withdraw";
+			break;
+		default:
+			std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
+			break;
+		}
+	}
+ }
+
+
+/**
+ * Edits account details, including name and savings/checkings accounts
+ */
+void Customer::edit_account() {
+	bool swap = false;
+	bool three = false;
+	int choice = 1;
+	while(choice != 0) {
+		system("cls");
+		std::cout << std::endl << "\tEditing user account details for user #" << ID;
+		std::cout << std::endl << std::endl << "0) Exit to main menu";
+		std::cout << std::endl << std::endl << "1) Edit name";
+		if(mySavings != NULL && myCheckings == NULL) {
+			std::cout << std::endl << std::endl << "2) Delete Savings";
+		} else if(mySavings == NULL && myCheckings != NULL) {
+			swap = true;
+			std::cout << std::endl << std::endl << "2) Delete Checkings";
+		} else if(mySavings == NULL && myCheckings == NULL) {
+			std::cout << "\n\nNo accounts exist";
+		} else {
+			three = true;
+			std::cout << std::endl << std::endl << "2) Delete Savings";
+			std::cout << std::endl << std::endl << "3) Delete Checkings";
+		}
+		std::cout << std::endl << std::endl << "Make Your Choice: ";
+		std::cin >> choice;
+		system("cls");
+
+		if(swap && choice == 2) { //Correct for menu dynamics
+			choice = 3;
+		}
+
+		switch(choice)
+		{
+		case 1: //Edit name
+			std::cout << "\nNew first name: ";
+			std::cin >> fname;
+			std::cout << "\nNew last name: ";
+			std::cin >> lname;
+			break;
+		case 2: //Delete Savings
+			mySavings = NULL;
+			std::cout << "\n\tSavings account deleted";
+			break;
+		case 3: //Delete Checkings
+			if(three) {
+				myCheckings = NULL;
+				std::cout << "\n\tCheckings account deleted";
+			} else {
+				std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
+			}
+			break;
+		case 0:
+			std::cout << "\n\nLeaving account edit";
+			break;
+		default:
+			std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
+			break;
+		}
+	}
+}
+
+
+/**
+ * Adds bank account to user with dynamic menu
+ */
+void Customer::add_account() {
+	bool swap = false;
+	bool two = false;
+	int choice = 1;
+	while(choice != 0) {
+		system("cls");
+		std::cout << std::endl << "\tAdd bank account for user #" << ID;
+		std::cout << std::endl << std::endl << "0) Exit to main menu";
+		if(mySavings == NULL && myCheckings != NULL) {
+			std::cout << std::endl << std::endl << "1) Add Savings";
+		} else if(mySavings != NULL && myCheckings == NULL) {
+			swap = true;
+			std::cout << std::endl << std::endl << "1) Add Checkings";
+		} else if(mySavings != NULL && myCheckings != NULL) {
+			std::cout << "\n\nAlready contains both types of accounts";
+		} else {
+			two = true;
+			std::cout << std::endl << std::endl << "1) Add Savings";
+			std::cout << std::endl << std::endl << "2) Add Checkings";
+		}
+		std::cout << std::endl << std::endl << "Make Your Choice: ";
+		std::cin >> choice;
+		system("cls");
+
+		if(swap && choice == 1) { //Correct for menu dynamics
+			choice = 2;
+		}
+
+		switch(choice)
+		{
+		case 1: //Add Savings
+			mySavings = new Savings();
+			std::cout << "\n\tSavings account created, waiting on approval of bank manager.";
+			break;
+		case 2: //Add Checkings
+			if(two) {
+				myCheckings = new Checkings();
+				std::cout << "\n\tCheckings account created, waiting on approval of bank manager.";
+			} else {
+				std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
+			}
+			break;
+		case 0:
+			std::cout << "\n\nLeaving account add";
+			break;
+		default:
+			std::cerr << std::endl << std::endl << "Incorrect Input" << std::endl;
+			break; 
+		}
+	}
+}
+
+
+/**
+ * Manager, a type of BaseUser. Contains no accounts but has admin access
  */
 class Manager : public BaseUser {
 public:

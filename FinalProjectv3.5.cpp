@@ -31,15 +31,16 @@ BaseUser* sign_in(int,string);
 void write_user_to_file(BaseUser*);
 BaseUser* get_user_from_file(int id);
 
-void delete_user_account(BaseUser*);
-void display_account(int);
+bool delete_user_account(BaseUser*);
+void display_all_accounts();
 void edit_account(int);
 /*void write_account();*/
 
 int main()
 {
+	system("cls");
 	cout << endl << "\t!!!Welcome to S&K Bank!!!";
-	BaseUser* user = new Customer();
+	BaseUser* usr = new Customer();
 
 	//Log in loop
 	do {
@@ -52,29 +53,30 @@ int main()
 			} else {
 				//Check if id is fully a number
 				int idnum = 0;
-				int power = 5;
 				for(auto i : id) {
 					if(!isdigit(i))
 						throw error("Invalid user ID");
-					idnum += atoi(&i)*pow(10,power--);
 				}
+
+				idnum = stoi(id);
 
 				string password = enter_password();
 
-				user = sign_in(idnum,password);
+				usr = sign_in(idnum,password);
 			}
 		} catch(error e) {
 			e.display();
 		}
 
-	} while(user->getID() == 1); //default value for new BaseUser
+	} while(usr->getID() == 1); //default value for new BaseUser
 
 
-	if(user->getID() != 1) {
+	if(usr->getID() != 1) {
 		char choice;
 		int num;
 		do {
-			if(user->get_permissions() == 2) { //Menu for Bank Manager
+			if(usr->get_permissions() == 2) { //Menu for Bank Manager
+				Manager *user = static_cast<Manager*>(usr);
 				system("cls");
 				cout << endl << endl << "\t----------MANAGER MODE----------";
 				cout << endl << "\tWelcome back " << user->getFName();
@@ -92,19 +94,23 @@ int main()
 					break;
 				case '2':
 					display_all_accounts();
-					close_user_account();
+					//close_user_account();
 					break;
 				case '3':
-					approve_pending_accounts();
+					//approve_pending_accounts();
+					break;
+				case '0':
 					break;
 				 default:
-					 cout << "\a";
+					 cout << "\a\nIncorrect Input\n";
 				}
+				cout << "\n\n\tPress any key to continue";
 				cin.ignore();
 				cin.get();
+				system("cls");
 
 			} else { //Menu for regular customers
-
+				Customer *user = static_cast<Customer*>(usr);
 				system("cls");
 				cout << endl << "\t!!! Welcome " << user->getFName() << " !!!";
 				cout << endl << endl << "0) Exit";
@@ -118,39 +124,34 @@ int main()
 				system("cls");
 				switch(choice)
 				{
-				case '1':
-
-					int act;
-					cin >> act
-					display_account(act);
+				case '1': //View account balances
+					user->display_account_details();
 					break;
-				case '2':
-
-					double dep;
-					BaseAccount->deposit(dep);
-					write_user_to_file(BaseUser*);
+				case '2': //Deposit
+					user->deposit();
+					write_user_to_file(user);
 					break;
-				case '3':
-
-					double wit;
-					BaseAccount->withdraw(wit);
-					write_user_to_file(BaseUser*);
+				case '3': //Withdraw
+					user->withdraw();
+					write_user_to_file(user);
 					break;
-				case '4':
-					create_user_account();
-					write_user_to_file(BaseUser*);
+				case '4': //Create a new savings/checkings account (only if the user does not already have one or both)
+					user->add_account();
+					write_user_to_file(user);
 					break;
-				case '5':
-
-					int edit;
-					edit_account(edit);
-					write_user_to_file(BaseUser*);
+				case '5': //Edit account details
+					user->edit_account();
+					write_user_to_file(user);
+					break;
+				case '0':
 					break;
 				 default:
-					 cout << "\a";
+					 cout << "\a\nIncorrect Input\n";
 				}
+				cout << "\n\n\tPress any key to continue";
 				cin.ignore();
 				cin.get();
+				system("cls");
 			}
 
 		}
@@ -163,7 +164,7 @@ int main()
 
 
 /**
- *
+ * Sign in a user using the logins file. Returns the user object pointer.
  */
 BaseUser* sign_in(int usrID, string encrypted_pass) {
 	//Open logins.dat
@@ -172,7 +173,7 @@ BaseUser* sign_in(int usrID, string encrypted_pass) {
 	if(!loginFile)
 	{
 		cout << "Something went wrong, logins.dat couldn't be opened in sign_in(). Press any key to continue.";
-		return false;
+		return new Customer();
 	}
 
 	//See if password matches one in file
@@ -207,7 +208,7 @@ BaseUser* sign_in(int usrID, string encrypted_pass) {
 
 
 /**
- * Gets next available ID for users
+ * Gets next available ID for users by analyzing the logins file
  */
 int getNextID() {
 	ifstream inFile;
@@ -245,8 +246,6 @@ string enter_password() {
 	char c;
 	string pass = "";
 
-	cin >> pass;
-
 	while((c = getch()) != '\r') {
 		pass += c;
 	}
@@ -259,7 +258,7 @@ string enter_password() {
 
 
 /**
- * Creates user account
+ * Creates user account, writes user object to users file, and creates their login
  */
 void create_user_account() {
 	cout << endl << "\t**Create a new user account**";
@@ -289,6 +288,7 @@ void create_user_account() {
 	string pass = enter_password();
 
 	//Save login object to file
+	ofstream outFile;
 	outFile.open("logins.dat",ios::app);
 	if(!outFile)
 	{
@@ -309,8 +309,6 @@ void display_balances(BaseUser* usr) {
 	Customer* cust = static_cast<Customer*>(usr);
 	if(!(cust->myCheckings == NULL)) {
 		cust->myCheckings->display_details();
-		//cout << setw(20) << "Checkings #" << usr->myCheckings->get_act_num() << endl <<
-			//setw(20) << usr->myCheckings->get_balance() << endl;
 	}
 	if(!(cust->mySavings == NULL)) {
 		cust->mySavings->display_details();
@@ -319,7 +317,7 @@ void display_balances(BaseUser* usr) {
 
 
 /**
- *
+ * Writes a user object to the users file
  */
 void write_user_to_file(BaseUser* usr) {
 	delete_user_account(usr);
@@ -331,19 +329,19 @@ void write_user_to_file(BaseUser* usr) {
 
 	}
 	else {
-		cout << "\nInside customer print";
+		//cout << "\nInside customer print";
 		Customer *user = static_cast<Customer*>(usr);
 
 		of << user->getID() << " " << user->getFName() << " " << user->getLName();
 		if(user->mySavings != NULL) {
-			cout << "\nPrinting Savings";
+			//cout << "\nPrinting Savings";
 			of << " " <<  user->mySavings->get_type() << " " <<  user->mySavings->get_act_num() << " "
 				<<  user->mySavings->get_balance() << " " <<  user->mySavings->approved << " "
 				<<  user->mySavings->get_mon() << " " <<  user->mySavings->get_int_rate() << " "
 				<<  user->mySavings->get_trans();
 		}
 		if(user->myCheckings != NULL) {
-			cout << "\nPrinting Checkings";
+			//cout << "\nPrinting Checkings";
 			of << " " <<  user->myCheckings->get_type() << " " <<  user->myCheckings->get_act_num() << " "
 				<<  user->myCheckings->get_balance() << " " <<  user->myCheckings->approved
 				<< " " <<  user->myCheckings->get_card_status();
@@ -355,7 +353,7 @@ void write_user_to_file(BaseUser* usr) {
 
 
 /**
- *
+ * Retrieves user object from the users file
  */
 BaseUser* get_user_from_file(int id) {
 	ifstream is("users.dat");
@@ -410,6 +408,9 @@ BaseUser* get_user_from_file(int id) {
 }
 
 
+/**
+ * Deletes a specific user from the records
+ */
 bool delete_user_account(BaseUser* user) //delete an account
 {
 	ifstream inFile;
@@ -449,94 +450,12 @@ bool delete_user_account(BaseUser* user) //delete an account
 }
 
 
-
 /**
- *
- *
-void deposit_withdraw(int x, int choice) //figured I'd put deposit and withdraw in the same function for simplicities sake
+ * yes
+ */
+void display_all_accounts() //allows the user to see all their accounts
 {
-	int amt;
-	bool b = false;
-	account acc;
-	fstream File;
-	File.open("account.dat", ios::binary|ios::in|ios::out);
-	if(!File)
-	{
-		cout << "Something went wrong, the file couldn't be opened. Press any key to continue";
-		return;
-	}
-	while(!File.eof() && b == false)
-	{
-		File.read(reinterpret_cast<char *> (&acc), sizeof(account));
-		if(acc.retact_num() == x)
-		{
-			acc.display_account();
-			if(choice == 1)
-			{
-				cout << endl << endl << "\tDepositing";
-				cout << endl << endl << "Enter Amount to be Deposited";
-				cin >> amt;
-				acc.deposit(amt);
-			}
-			if(choice == 2)
-			{
-				cout << endl << endl << "\tWithdrawing";
-				cout << endl << endl << "Enter Amount to be Withdrawn";
-				cin >> amt;
-				int bal = acc.retdeposit() - amt;
-				if((bal < 0 && acc.rettype() == 'S') || (bal < 0 && acc.rettype() == 'C'))
-					cout << "Insufficience Balance";
-				else
-					acc.withdraw(amt);
-			}
-			int pos = (-1)*static_cast<int>(sizeof(acc));
-			File.seekp(pos, ios::cur);
-			File.write(reinterpret_cast<char *> (&acc), sizeof(account));
-			cout << endl << endl << "\tAccount Updated";
-			b = true;
-	       }
-         }
-	File.close();
-	if(b == false)
-		cout << endl << endl << "We Couldn't Find the Record, Please Try Again";
-}*/
-
-
-/**
- *
- *
-void display_account(int x) //read record from file
-{
-	account acc;
-	bool b = false;
-	ifstream inFile;
-	inFile.open("account.dat",ios::binary);
-	if(!inFile)
-	{
-		cout << "Something went wrong, the File couldn't be opened. Press any key to continue";
-		return;
-	}
-	cout << endl << "Balance" << endl;
-    while(inFile.read(reinterpret_cast<char *> (&acc), sizeof(account)))
-	{
-		if(acc.retact_num() == x)
-		{
-			acc.display_account();
-			b = true;
-		}
-	}
-	inFile.close();
-	if(b == false)
-	cout << endl << endl << "That Account Number does not exist";
-}*/
-
-
-/**
- *
- *
-void display_all() //allows the user to see all their accounts
-{
-	account acc;
+/*	account acc;
 	ifstream inFile;
 	inFile.open("account.dat",ios::binary);
 	if(!inFile)
@@ -550,55 +469,8 @@ void display_all() //allows the user to see all their accounts
 	{
 		acc.report();
 	}
-	inFile.close();
-}*/
+	inFile.close();*/
+}
 
 
-/**
- *
- *
-void edit_account(int x) //used to edit a record
-{
-	bool b = false;
-	account acc;
-	fstream File;
-	File.open("account.dat",ios::binary|ios::in|ios::out);
-	if(!File)
-	{
-		cout << "Something went wrong, the File couldn't be opened. Press any key to continue";
-		return;
-	}
-	while(!File.eof() && b == false)
-	{
-		File.read(reinterpret_cast<char *> (&acc), sizeof(account));
-		if(acc.retact_num() == x)
-		{
-			acc.display_account();
-			cout << endl << endl << "Enter New Account Info" << endl;
-			acc.edit();
-			int pos = (-1)*static_cast<int>(sizeof(account));
-			File.seekp(pos,ios::cur);
-			File.write(reinterpret_cast<char *> (&acc), sizeof(account));
-			cout << endl << endl << "\t Account Updated";
-			b = true;
-		  }
-	}
-	File.close();
-	if(b == false)
-		cout<< endl << endl << "We Couldn't Find the Record, Please Try Again";
-}*/
-
-
-/**
- *
- *
-void write_account() //write to file
-{
-	account acc;
-	ofstream outFile;
-	outFile.open("account.dat",ios::binary|ios::app);
-	acc.create_account();
-	outFile.write(reinterpret_cast<char *> (&acc), sizeof(account));
-	outFile.close();
-}*/
 
